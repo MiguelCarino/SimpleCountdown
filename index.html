@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Moe Countdown</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', 'Noto Sans JP', sans-serif;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      display: flex;
+      height: 100vh;
+      color: #4a4a4a;
+    }
+    aside {
+      width: 260px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 1.2rem;
+      overflow-y: auto;
+      backdrop-filter: blur(6px);
+    }
+    aside input {
+      width: 100%;
+      padding: 0.7rem;
+      margin-bottom: 1.2rem;
+      border-radius: 8px;
+      border: 1px solid #f9a8d4;
+      background: #fff0f5;
+      font-size: 1rem;
+    }
+    .sidebar-link {
+      display: block;
+      padding: 0.8rem 1rem;
+      margin: 0.3rem 0;
+      background: #f9a8d4;
+      color: white;
+      border-radius: 10px;
+      font-weight: bold;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .sidebar-link:hover {
+      background: #f472b6;
+    }
+    main {
+      flex-grow: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      backdrop-filter: blur(4px);
+      background: rgba(255,255,255,0.7);
+      position: relative;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      color: #d63384;
+    }
+    .event {
+      background: #ffe5ec;
+      border: 2px solid #f9a8d4;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(255, 192, 203, 0.3);
+    }
+    .event h2 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      color: #c2255c;
+    }
+    .countdown {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #d63384;
+    }
+    .event-date {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      color: #444;
+      line-height: 1.4;
+    }
+    .event-date strong {
+      color: #c2255c;
+    }
+
+    #mascot {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      max-height: 30vh;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0.95;
+    }
+  </style>
+</head>
+<body>
+
+  <aside>
+    <input type="text" id="sidebar-search" placeholder="Search events..." />
+    <div id="sidebar-links"></div>
+  </aside>
+
+  <main>
+    <h1 id="main-title">⏳ Moe Countdown Events</h1>
+    <div id="events"></div>
+  </main>
+
+  <img id="mascot" src="assets/mascots/01.jpg" alt="Mascot">
+
+  <script>
+    const events = [
+      {
+        name: "Windows 10 End of Support", date: new Date("2025-10-14T00:00:00Z"), url: "https://endoflife.date/windows"},
+      { name: "Epoch Time Death (32-bit)", date: new Date("2038-01-19T03:14:07Z")},
+      { name: "Ubuntu 22.04 LTS End of Life", date: new Date("2027-04-01T01:01:01Z"), url: "https://endoflife.date/ubuntu"},
+      { name: "Windows Server 2019 End of Support", date: new Date("2029-01-09T00:00:00Z"), url: "https://endoflife.date/windows" },
+      { name: "Ubuntu 24.04 LTS End of Life", date: new Date("2029-04-01T00:00:00Z"),  url: "https://endoflife.date/ubuntu" },
+      { name: "Fedora 39 End of Life", date: new Date("2024-11-19T00:00:00Z"),  url: "https://endoflife.date/fedora" },
+      { name: "Debian 12 Support End", date: new Date("2028-06-30T00:00:00Z"),  url: "https://endoflife.date/debian" },
+      { name: "Arch Linux Support End", date: new Date(Date.now() + 5000),  url: "https://archlinux.org/" },
+      { name: "openSUSE Leap 15.5 EOL", date: new Date("2024-12-31T00:00:00Z"),  url: "https://endoflife.date/opensuse" },
+      { name: "RHEL 9 End of Life", date: new Date("2032-05-31T00:00:00Z"),  url: "https://endoflife.date/rhel" },
+      { name: "CentOS Stream 9 End of Life", date: new Date("2027-05-31T00:00:00Z"),  url: "https://endoflife.date/centos-stream" },
+      { name: "Start of the year 2100", date: new Date("2100-01-01T00:00:00Z"),  url: "https://endoflife.date/centos-stream" },
+      { name: "40K Millenia", date: new Date("40000-01-01T00:00:00Z"),  url: "https://endoflife.date/centos-stream" },
+      { name: "Y2K Bug", date: new Date("2000-01-01T00:00:00Z") },
+      { name: "Unix Epoch Start", date: new Date("1970-01-01T00:00:00Z") },
+      { name: "First Email Sent", date: new Date("1971-10-29T00:00:00Z") },
+      { name: "Launch of ARPANET", date: new Date("1969-10-29T00:00:00Z") },
+      { name: "Microsoft Founded", date: new Date("1975-04-04T00:00:00Z") },
+      { name: "Apple Founded", date: new Date("1976-04-01T00:00:00Z") },
+      { name: "IBM PC Released", date: new Date("1981-08-12T00:00:00Z") },
+      { name: "First Website Online", date: new Date("1991-08-06T00:00:00Z") },
+      { name: "Google Founded", date: new Date("1998-09-04T00:00:00Z") },
+      { name: "Bitcoin Genesis Block", date: new Date("2009-01-03T18:15:05Z") },
+      { name: "Windows 95 Released", date: new Date("1995-08-24T00:00:00Z") },
+      { name: "Heartbleed Bug Disclosure", date: new Date("2014-04-07T00:00:00Z") },
+      { name: "Equifax Breach Announced", date: new Date("2017-09-07T00:00:00Z") },
+      { name: "Facebook-Cambridge Analytica Scandal", date: new Date("2018-03-17T00:00:00Z") },
+      { name: "Launch of ChatGPT", date: new Date("2022-11-30T00:00:00Z") },
+      { name: "Spectre & Meltdown Disclosed", date: new Date("2018-01-03T00:00:00Z") },
+      { name: "SolarWinds Hack Disclosed", date: new Date("2020-12-13T00:00:00Z") },
+      { name: "GitHub Launched", date: new Date("2008-04-10T00:00:00Z") },
+      { name: "Linux Kernel First Released", date: new Date("1991-09-17T00:00:00Z") },
+      { name: "EU AI Act Enforcement Begins", date: new Date("2026-01-01T00:00:00Z") },
+      { name: "India Digital Personal Data Protection Act Deadline", date: new Date("2025-12-31T00:00:00Z") },
+      { name: "UN WSIS+20 Global Internet Governance Talks", date: new Date("2025-06-01T00:00:00Z") },
+      { name: "NIST PQC Standards Finalization", date: new Date("2024-12-01T00:00:00Z") },
+      { name: "EU Digital Identity Wallet Mandatory Adoption", date: new Date("2026-01-01T00:00:00Z") },
+      { name: "NASA Voyager 2 Power Down", date: new Date("2025-10-01T00:00:00Z") },
+      { name: "NHS Spine 2 Migration Deadline", date: new Date("2025-03-31T00:00:00Z") },
+      { name: "Canada Bill C-27 in Force", date: new Date("2025-01-01T00:00:00Z") },
+          
+      // Historical computing & games
+      { name: "First Video Game (Tennis for Two)", date: new Date("1958-10-18T00:00:00Z") },
+      { name: "Pong Released", date: new Date("1972-11-29T00:00:00Z") },
+      { name: "Super Mario Bros Released", date: new Date("1985-09-13T00:00:00Z") },
+      { name: "DOOM Released", date: new Date("1993-12-10T00:00:00Z") },
+      { name: "The Legend of Zelda Released", date: new Date("1986-02-21T00:00:00Z") },
+      { name: "Minecraft Initial Release", date: new Date("2009-05-17T00:00:00Z") },
+      { name: "Tetris Created", date: new Date("1984-06-06T00:00:00Z") },
+      { name: "World of Warcraft Launched", date: new Date("2004-11-23T00:00:00Z") },
+      { name: "Pokémon Red/Green Released (Japan)", date: new Date("1996-02-27T00:00:00Z") },
+          
+      // Iconic hardware launches
+      { name: "First iPhone Release", date: new Date("2007-06-29T00:00:00Z") },
+      { name: "IBM PC Launched", date: new Date("1981-08-12T00:00:00Z") },
+      { name: "Commodore 64 Launch", date: new Date("1982-08-01T00:00:00Z") },
+      { name: "NES Release (Japan)", date: new Date("1983-07-15T00:00:00Z") },
+      { name: "PlayStation 1 Launch (Japan)", date: new Date("1994-12-03T00:00:00Z") },
+      { name: "PlayStation 2 Launch", date: new Date("2000-03-04T00:00:00Z") },
+      { name: "NVIDIA GeForce 256 (First GPU)", date: new Date("1999-10-11T00:00:00Z") },
+      { name: "Raspberry Pi 1 Launch", date: new Date("2012-02-29T00:00:00Z") },
+          
+      // International treaties & fixed dates
+      { name: "Antarctic Treaty Expiration Review", date: new Date("2048-01-01T00:00:00Z") }, // 50-year review clause
+      { name: "UN Convention on Cybercrime Review (Budapest)", date: new Date("2025-01-01T00:00:00Z") },
+      { name: "End of Leap Seconds Consideration (ITU)", date: new Date("2035-01-01T00:00:00Z") }, // UN decided to abolish them
+      {name: "The 41st Millennium Begins", date: new Date("40000-01-01T00:00:00Z"), mascot: "space_marine.png"}
+    ];
+
+    const eventsContainer = document.getElementById("events");
+    const sidebarLinks = document.getElementById("sidebar-links");
+    const searchInput = document.getElementById("sidebar-search");
+    const mainTitle = document.getElementById("main-title");
+    const mascotImg = document.getElementById("mascot");
+
+    let activeTimers = [];
+
+    function normalize(text) {
+      return text.toLowerCase().replace(/[^a-z0-9]+/g, '');
+    }
+
+    function clearCountdowns() {
+      activeTimers.forEach(clearInterval);
+      activeTimers = [];
+    }
+
+    function renderCountdown(event, id) {
+      const div = document.createElement("div");
+      div.className = "event";
+      div.innerHTML = `<h2>${event.name}</h2><div class="countdown" id="countdown-${id}">Loading...</div><br><b>See details at <a href="${event.url}">${event.url}</a></b>`;
+      div.innerHTML = `<h2>${event.name}</h2><div class="countdown" id="countdown-${id}">Loading...</div><div class="event-date" id="event-date-${id}"></div>`;
+
+      eventsContainer.appendChild(div);
+
+      const mascot = event.mascot || null;
+      const eventTime = event.date;
+
+      // Determine mascot ONCE here
+      const now = new Date();
+      const diff = eventTime - now;
+      if (diff <= 0) {
+        setMascot("passed", mascot);
+      } else {
+        setMascot("normal", mascot);
+      }
+      
+      // Countdown updater
+      let wasPassed = null; // track state outside update()
+
+    function update() {
+      const now = new Date();
+      const diff = eventTime - now;
+      const el = document.getElementById(`countdown-${id}`);
+      const dateEl = document.getElementById(`event-date-${id}`);
+      if (!el || !dateEl) return;
+
+      const abs = Math.abs(diff);
+      const totalDays = Math.floor(abs / (1000 * 60 * 60 * 24));
+      const years = Math.floor(totalDays / 365.25);
+      const days = Math.floor(totalDays % 365.25);
+      const h = Math.floor((abs / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((abs / (1000 * 60)) % 60);
+      const s = Math.floor((abs / 1000) % 60);
+
+      let timeStr = '';
+      if (years > 0) timeStr += `${years}y `;
+      timeStr += `${days}d ${h}h ${m}m ${s}s`;
+
+      const isPassed = diff <= 0;
+      el.textContent = isPassed
+        ? `Passed: ${timeStr} ago`
+        : `${timeStr} remaining`;
+
+      // Build both local and UTC representations
+      const localDate = eventTime.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+      const localTime = eventTime.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+
+      const utcDate = eventTime.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: "UTC"
+      });
+      const utcTime = eventTime.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "UTC"
+      });
+
+      // Only show time if it’s not exactly 00:00:00 UTC
+      const showTime =
+        eventTime.getUTCHours() !== 0 ||
+        eventTime.getUTCMinutes() !== 0 ||
+        eventTime.getUTCSeconds() !== 0;
+
+      dateEl.innerHTML = showTime
+        ? `📅 <strong>Local:</strong> ${localDate} at ${localTime}<br>
+           🕒 <strong>UTC:</strong> ${utcDate} at ${utcTime}`
+        : `📅 ${localDate}`;
+
+      // Mascot logic
+      if (wasPassed === null) {
+        setMascot(isPassed ? "passed" : "normal", event.mascot || null);
+      } else if (!wasPassed && isPassed) {
+        setMascot("passed", event.mascot || null);
+      }
+
+      wasPassed = isPassed;
+    }
+
+      update();
+      activeTimers.push(setInterval(update, 1000));
+    }
+
+
+    function renderMain(filter = '', exact = false) {
+      clearCountdowns();
+      eventsContainer.innerHTML = '';
+      const normFilter = normalize(filter);
+      const matched = events.filter(e => normalize(e.name).includes(normFilter));
+      if (exact && matched.length === 1) {
+        mainTitle.textContent = matched[0].name;
+        renderCountdown(matched[0], 0);
+        window.history.replaceState({}, '', `?event=${encodeURIComponent(matched[0].name)}`);
+      } else {
+        mainTitle.textContent = matched.length ? `🔎 Matches for: "${filter}"` : "⏳ Moe Countdown Events";
+        matched.forEach((e, i) => renderCountdown(e, i));
+        if (filter) window.history.replaceState({}, '', `?event=${encodeURIComponent(filter)}`);
+      }
+    }
+
+    function renderSidebar(filter = '') {
+      const normFilter = normalize(filter);
+      const filtered = events.filter(e => normalize(e.name).includes(normFilter));
+      sidebarLinks.innerHTML = '';
+      filtered.forEach(e => {
+        const a = document.createElement("a");
+        a.className = "sidebar-link";
+        a.textContent = e.name;
+        a.onclick = () => renderMain(e.name, true);
+        sidebarLinks.appendChild(a);
+      });
+    }
+
+    searchInput.addEventListener('input', () => {
+      renderSidebar(searchInput.value);
+    });
+
+    function setMascot(condition = "normal", overrideName = null) {
+      if (overrideName) {
+        mascotImg.src = `assets/mascots/${overrideName}`;
+        return;
+      }
+
+      let folder = "defaults";
+      let count = 11; // how many default mascots you have
+
+      if (condition === "passed") {
+        folder = "passed";
+        count = 11; // adjust for how many sad mascots you have
+      }
+
+      const index = Math.floor(Math.random() * count) + 1;
+      mascotImg.src = `assets/mascots/${folder}/${index}.jpg`;
+    }
+
+
+
+    function setRandomBackground() {
+      const totalImages = 11; // Adjust to match how many backgrounds you have
+      const index = Math.floor(Math.random() * totalImages) + 1;
+      document.body.style.backgroundImage = `url('assets/backgrounds/bg${index}.jpg')`;
+    }
+
+    function initFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      const queryEvent = params.get("event");
+      const hash = window.location.hash.replace("#", "").trim();
+
+      // Priority: query param > hash fragment > default
+      if (queryEvent) {
+        renderMain(queryEvent, false);
+        searchInput.value = '';
+        renderSidebar('');
+      } else if (hash) {
+        renderMain(hash, false);
+        searchInput.value = '';
+        renderSidebar('');
+      } else {
+        renderMain();
+        renderSidebar();
+      }
+    }
+
+    setRandomBackground();
+    window.addEventListener('popstate', initFromURL);
+    initFromURL();
+  </script>
+</body>
+</html>
