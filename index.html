@@ -115,8 +115,7 @@
 
   <script>
     const events = [
-      {
-        name: "Windows 10 End of Support", date: new Date("2025-10-14T00:00:00Z"), url: "https://endoflife.date/windows"},
+      { name: "Windows 10 End of Support", date: new Date("2025-10-14T00:00:00Z"), url: "https://endoflife.date/windows"},
       { name: "Epoch Time Death (32-bit)", date: new Date("2038-01-19T03:14:07Z")},
       { name: "Ubuntu 22.04 LTS End of Life", date: new Date("2027-04-01T01:01:01Z"), url: "https://endoflife.date/ubuntu"},
       { name: "Windows Server 2019 End of Support", date: new Date("2029-01-09T00:00:00Z"), url: "https://endoflife.date/windows" },
@@ -131,6 +130,7 @@
       { name: "40K Millenia", date: new Date("40000-01-01T00:00:00Z"),  url: "https://endoflife.date/centos-stream" },
       { name: "Y2K Bug", date: new Date("2000-01-01T00:00:00Z") },
       { name: "Unix Epoch Start", date: new Date("1970-01-01T00:00:00Z") },
+      { name: "First Wayland release", date: new Date("2012-10-23T23:26:46Z") },
       { name: "First Email Sent", date: new Date("1971-10-29T00:00:00Z") },
       { name: "Launch of ARPANET", date: new Date("1969-10-29T00:00:00Z") },
       { name: "Microsoft Founded", date: new Date("1975-04-04T00:00:00Z") },
@@ -207,7 +207,12 @@
       div.className = "event";
       div.innerHTML = `<h2>${event.name}</h2><div class="countdown" id="countdown-${id}">Loading...</div><br><b>See details at <a href="${event.url}">${event.url}</a></b>`;
       div.innerHTML = `<h2>${event.name}</h2><div class="countdown" id="countdown-${id}">Loading...</div><div class="event-date" id="event-date-${id}"></div>`;
-
+      div.innerHTML = `
+  <h2>${event.name}</h2>
+  <div class="countdown" id="countdown-${id}">Loading...</div>
+  <div class="event-date" id="event-date-${id}"></div>
+  <div class="event-link" id="event-link-${id}"></div>
+`;
       eventsContainer.appendChild(div);
 
       const mascot = event.mascot || null;
@@ -279,7 +284,11 @@
         eventTime.getUTCHours() !== 0 ||
         eventTime.getUTCMinutes() !== 0 ||
         eventTime.getUTCSeconds() !== 0;
-
+      
+        const linkEl = document.getElementById(`event-link-${id}`);
+      if (event.url && linkEl) {
+        linkEl.innerHTML = `More info at <a href="${event.url}" target="_blank" rel="noopener" class="event-url-link">${event.url}</a>`;
+      }
       dateEl.innerHTML = showTime
         ? `📅 <strong>Local:</strong> ${localDate} at ${localTime}<br>
            🕒 <strong>UTC:</strong> ${utcDate} at ${utcTime}`
